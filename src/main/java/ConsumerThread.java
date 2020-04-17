@@ -1,24 +1,33 @@
-public class ConsumerThread extends Thread {
-    private final SiteUtils siteUtils;
-    public ConsumerThread(SiteUtils siteUtils) {
-        this.siteUtils = siteUtils;
-    }
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 
-    public void run(){
+import java.io.*;
+import java.util.Queue;
 
+@AllArgsConstructor
+public class ConsumerThread extends Thread{
+    private final Queue<SiteContent> queueSiteContents;
+
+    public void run() {
+        ObjectMapper mapper = new ObjectMapper();
+        File file = new File("C:\\Users\\Jacek\\Desktop\\chuj.json");
         while (true) {
             SiteContent siteContent;
-            synchronized (siteUtils.getQueueSiteContents()) {
-                if (siteUtils.getQueueSiteContents().isEmpty()) {
-                    continue;
+            synchronized (queueSiteContents) {
+                while (queueSiteContents.isEmpty()) {
+                    try {
+                        queueSiteContents.wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-                siteContent = siteUtils.getQueueSiteContents().poll();
+                siteContent = queueSiteContents.poll();
             }
-            try {
-                String siteContentString = siteContent.toString();
-                System.out.println("Consumer got item: " + siteContentString);
-            }catch (Exception e){
-
+            System.out.println("save");
+            try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\Users\\Jacek\\Desktop\\chuj.txt", true)))) {
+                out.println(siteContent.toString());
+            } catch (IOException e) {
+                System.err.println(e);
             }
         }
     }
