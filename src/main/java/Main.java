@@ -1,16 +1,11 @@
-import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+
 
 public class Main {
-    final static BlockingQueue<SiteContent> queueSiteContents = new ArrayBlockingQueue<>(100);
-    final static ArrayList<String> checkedUrl = new ArrayList<>();
-    public static void main(String[] args) throws IOException{
-        ProducerThread producerThread = new ProducerThread(queueSiteContents, checkedUrl, "https://boards.4chan.org/b");
-        ConsumerThread consumerThread  = new ConsumerThread(queueSiteContents);
-        producerThread.start();
-        consumerThread.start();
-    }
-
+    private final static Set<SiteContent> queueSiteContents = new HashSet<>();
+    private final static Set<String> checkedUrl = new HashSet<>();
+    public static void main(String[] args){
+          SitesScrapper sitesScrapper = new SitesScrapper(checkedUrl, queueSiteContents);
+          sitesScrapper.addSiteContent("https://4chan.org/");
+          }
 }
