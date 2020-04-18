@@ -1,64 +1,63 @@
 import lombok.Getter;
 import lombok.Setter;
 import org.jsoup.Jsoup;
+import org.jsoup.UnsupportedMimeTypeException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 
 @Getter
 @Setter
-public class ProducentThread extends Thread {
+public class ProducerThread extends Thread {
     private static final Random generator = new Random();
-    private final Queue<SiteContent> queueSiteContents;
+    private final BlockingQueue<SiteContent> queueSiteContents;
     private final ArrayList<String> checkedUrl;
+    private final String url;
 
-    ProducentThread(Queue<SiteContent> queueSiteContents, ArrayList<String> checkedUrl, String url){
+    ProducerThread(BlockingQueue<SiteContent> queueSiteContents, ArrayList<String> checkedUrl, String url){
         this.queueSiteContents = queueSiteContents;
         this.checkedUrl = checkedUrl;
-        try {
-            addSiteContent(url);
-        } catch (IOException e) {
-        }
+        this.url = url;
     }
 
     public void run(){
-        while(true){
-            System.out.println(queueSiteContents.size());
-            SiteContent siteContent = queueSiteContents.element();
-            if(siteContent != null) {
-                for (String url : siteContent.getUrls()) {
-                    if (!checkedUrl.contains(url)) {
-                        try {
-                            addSiteContent(url);
-                        } catch (IOException e) {
-                        }
-                    }
+        try {
+            addSiteContent(url);
+            while (true){
+            try {
+                for(String s : queueSiteContents.take().getUrls()){
+                    addSiteContent(s);
                 }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-            else{
-                System.out.println(siteContent.toString());
             }
-            synchronized (queueSiteContents){
-                queueSiteContents.notify();
-            }
-
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    public void addSiteContent(String url) throws IOException{
-        Document document = getDocument(url);
-        Set<String> links = findLinks(document, url);
-        Set<String> keywords = findKeywords(document);
-        if(!checkedUrl.contains(url)){
-            synchronized (queueSiteContents){
-                queueSiteContents.add(new SiteContent(url, links, keywords));
-                System.out.println("dodaje item");
+    public void addSiteContent(String url) throws IOException {
+        try {
+            Document document = getDocument(url);
+            Set<String> links = findLinks(document, url);
+            Set<String> keywords = findKeywords(document);
+            if (!checkedUrl.contains(url)) {
+                try {
+                    queueSiteContents.put(new SiteContent(url, links, keywords));
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-            checkedUrl.add(url);
         }
+        catch (Exception e ) {
+        }
+
     }
 
     private Set<String> findLinks(Document doc, String url) throws IOException {

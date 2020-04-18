@@ -1,14 +1,15 @@
 import java.io.IOException;
-import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 public class Main {
-    final static Queue<SiteContent> queueSiteContents = new LinkedList<>();
+    final static BlockingQueue<SiteContent> queueSiteContents = new ArrayBlockingQueue<>(100);
     final static ArrayList<String> checkedUrl = new ArrayList<>();
     public static void main(String[] args) throws IOException{
-        ProducentThread producentThread = new ProducentThread(queueSiteContents, checkedUrl, "https://boards.4chan.org/b");
+        ProducerThread producerThread = new ProducerThread(queueSiteContents, checkedUrl, "https://boards.4chan.org/b");
         ConsumerThread consumerThread  = new ConsumerThread(queueSiteContents);
-        producentThread.start();
+        producerThread.start();
         consumerThread.start();
     }
 
