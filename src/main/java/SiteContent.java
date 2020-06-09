@@ -14,7 +14,8 @@ class SiteContent {
     @Getter
     private String domainUrl;
     private Set<String> urls;
-    private Set<String> keywords;
+    @Getter
+    private String keywords;
     Set<String> getUrls() {
         if(urls.isEmpty()){
             return new HashSet<>();

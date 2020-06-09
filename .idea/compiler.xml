@@ -20,7 +20,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="Java Sieciowa Parser" target="8" />
+      <module name="Java Sieciowa Parser" target="9" />
     </bytecodeTargetLevel>
   </component>
 </project>
