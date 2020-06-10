@@ -11,7 +11,10 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
-
+/**
+ *Główny wątek aplikacji.
+ *
+ */
 @Getter
 @Setter
 class SitesScrapperThread extends Thread {
@@ -32,7 +35,10 @@ class SitesScrapperThread extends Thread {
     public void run(){
         addSiteContent(startParameters.getStartUrl());
     }
-
+    /**
+     *metoda odwiedzająca rekurencyjnie kolejne adresy
+     *
+     */
     private void addSiteContent(String url){
         if(finishTime.isAfter(LocalTime.now())) {
             try {
@@ -61,14 +67,20 @@ class SitesScrapperThread extends Thread {
             }
         }
     }
-
+    /**
+     *metoda zapisująca poprawne adresy do bazy
+     *
+     */
     private void saveSiteContent(SiteContent siteContent){
         siteContents.add(siteContent);
         checkedUrl.add(siteContent.getDomainUrl());
         dbConnection.addLinkToValidLinks(siteContent.getDomainUrl(), siteContent.getKeywords());
         log.info("Valid link: " + siteContent.getDomainUrl() + " " + siteContent.getKeywords());
     }
-
+    /**
+     *metoda wyszukująca linki na stronie
+     *
+     */
     private Set<String> findLinks(Document doc, String url) throws SitesScrapperException{
 
         Set<String> links = new HashSet<>();
@@ -86,7 +98,10 @@ class SitesScrapperThread extends Thread {
         }
         return links;
     }
-
+    /**
+     *metoda pobierająca zawartość strony
+     *
+     */
     private Document getDocument(String url) throws IOException{
         return Jsoup.connect(url)
                 .data("query", "Java")
@@ -95,7 +110,10 @@ class SitesScrapperThread extends Thread {
                 .timeout(30000)
                 .get();
     }
-
+    /**
+     *metoda szukająca słów kluczowych
+     *
+     */
     private String findKeywords(Document document) throws SitesScrapperException{
         String keywords;
         try{

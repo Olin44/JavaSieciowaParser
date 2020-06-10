@@ -1,5 +1,8 @@
 import java.sql.*;
-
+/**
+ *Klasa odpowiedzialna za połączenie z bazą danych
+ *
+ */
 public class DBConnection {
 
     private Connection conn;
@@ -13,7 +16,10 @@ public class DBConnection {
         preper = null;
         result = null;
     }
-
+    /**
+     *metoda odpowiedzialna za nawiązanie połączenie z bazą danych
+     *
+     */
     public void connect() {
         String url;
         try {
@@ -28,7 +34,10 @@ public class DBConnection {
             e.printStackTrace();
         }
     }
-
+    /**
+     *metoda odpowiedzialna za zakończenie połączenie z bazą danych
+     *
+     */
     public void disconnect() {
         try {
             if (!conn.isClosed()) {
@@ -40,7 +49,10 @@ public class DBConnection {
             e.printStackTrace();
         }
     }
-
+    /**
+     *metoda odpowiedzialna za stworzenie potrzebnych w bazie danych tabel
+     *
+     */
     public void createTables() {
         try {
             statement = conn.createStatement();
@@ -68,7 +80,10 @@ public class DBConnection {
             e.printStackTrace();
         }
     }
-
+    /**
+     *metoda odpowiedzialna za usunięcie tabel z bazy
+     *
+     */
     public void dropTables() {
         try {
             statement = conn.createStatement();
@@ -78,7 +93,10 @@ public class DBConnection {
             e.printStackTrace();
         }
     }
-
+    /**
+     *metoda odpowiedzialna dodanie poprawnego linku do bazy
+     *
+     */
     public synchronized void addLinkToValidLinks(String link, String keywords) {
         try {
             preper = conn.prepareStatement("insert into valid_links values (default, ?, ?)");
@@ -90,7 +108,10 @@ public class DBConnection {
             e.printStackTrace();
         }
     }
-
+    /**
+     *metoda odpowiedzialna za dodanie niepoprawnego linku do bazy
+     *
+     */
     public synchronized void addLinkToInvalidLinks(String link, String exception) {
         try {
             preper = conn.prepareStatement("insert into invalid_links values (default, ?, ?)");
@@ -102,7 +123,10 @@ public class DBConnection {
             e.printStackTrace();
         }
     }
-
+    /**
+     *metoda odpowiedzialna za pobranie wielkości tabel
+     *
+     */
     public String getAllTabSize() {
         int validLinksCount = 0;
         int invalidLinksCount = 0;
@@ -115,7 +139,10 @@ public class DBConnection {
         }
         return "Invalid links: " + invalidLinksCount + ", " + "Valid links: " + validLinksCount;
     }
-
+    /**
+     *metoda odpowiedzialna za pobranie statystyk dotyczących tabel
+     *
+     */
     public String getInvalidLinksStatistic() {
         int invalidLinksWithoutKeywors = 0;
         int invalidLinksCount = 0;
@@ -123,9 +150,9 @@ public class DBConnection {
         int invalidLinksWithoutLinksOnSite = 0;
         try {
             invalidLinksCount = getInvalidLinksCount();
-            linksFromCheckedDomain = getInvalidLinksDuplicateUrl();
-            invalidLinksWithoutKeywors = getInvalidLinksWithoutKeywords();
-            invalidLinksWithoutLinksOnSite = getInvalidLinksWithoutLinksOnSite();
+            linksFromCheckedDomain = getInvalidLinksDuplicateUrlCount();
+            invalidLinksWithoutKeywors = getInvalidLinksWithoutKeywordsCount();
+            invalidLinksWithoutLinksOnSite = getInvalidLinksWithoutLinksOnSiteCount();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -141,7 +168,10 @@ public class DBConnection {
                 "Invalid - links without links on site " + invalidLinksWithoutLinksOnSite +", \n" +
                 "Invalid - links that could not be connected " + errorWithConnectionLinks  +".";
     }
-
+    /**
+     *metoda odpowiedzialna za obliczenie libczy wierszy w tabeli z niepoprawnymi danymi
+     *
+     */
     private int getInvalidLinksCount() throws SQLException {
         statement = conn.createStatement();
         String sql = "select count(*) from public.invalid_links";
@@ -149,29 +179,41 @@ public class DBConnection {
         result.next();
         return result.getInt(1);
     }
-
+    /**
+     *metoda odpowiedzialna za obliczenie liczby wierszy w tabeli z poprawnymi danymi
+     *
+     */
     private int getValidLinksCount() throws SQLException {
         String sql = "select count(*) from valid_links";
         result = statement.executeQuery(sql);
         result.next();
         return result.getInt(1);
     }
-
-    private int getInvalidLinksWithoutKeywords() throws SQLException {
+    /**
+     *metoda odpowiedzialna za obliczenie liczby wierszy w tabeli z niepoprawnymi linkami, które nie miały słów kluczowych
+     *
+     */
+    private int getInvalidLinksWithoutKeywordsCount() throws SQLException {
         preper = conn.prepareStatement("select count(*) from invalid_links where invalid_links.exception = 'No keywords in meta section'");
         result = preper.executeQuery();
         result.next();
         return result.getInt(1);
     }
-
-    private int getInvalidLinksDuplicateUrl() throws SQLException {
+    /**
+     *metoda odpowiedzialna za obliczenie liczby wierszy w tabeli z niepoprawnymi linkami z już odwiedzonych domen
+     *
+     */
+    private int getInvalidLinksDuplicateUrlCount() throws SQLException {
         preper = conn.prepareStatement("select count(*) from invalid_links where invalid_links.exception = 'Url from checked domain'");
         result = preper.executeQuery();
         result.next();
         return result.getInt(1);
     }
-
-    private int getInvalidLinksWithoutLinksOnSite() throws SQLException {
+    /**
+     *metoda odpowiedzialna za obliczenie liczby wierszy w tabeli z niepoprawnymi linkami, w których brakowało kolejnych linków na stronie
+     *
+     */
+    private int getInvalidLinksWithoutLinksOnSiteCount() throws SQLException {
         preper = conn.prepareStatement("select count(*) from invalid_links where invalid_links.exception = '0 links on site'");
         result = preper.executeQuery();
         result.next();

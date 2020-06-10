@@ -6,7 +6,11 @@ import lombok.ToString;
 import java.util.HashSet;
 import java.util.Set;
 
-
+/**
+ *Klasa przechowująca linki do odwiedzonych stron.
+ * Znajduje się w pole urls, w którym przechowywane są linki znalezione na odwiedzonej stronie, oraz słowa kluczowe;
+ *
+ */
 @AllArgsConstructor
 @ToString
 @Setter
